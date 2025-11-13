@@ -9,6 +9,9 @@
       }
     }
   },
+  "blocks": {
+    "entry": "src/blocks/main.tsx"
+  },
   "server": {
     "dir": "dist/server",
     "entry": "index.cjs"
