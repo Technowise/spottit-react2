@@ -190,7 +190,19 @@ Devvit.addCustomPostType({
           const postOptions: any = {
             subredditName,
             title: title || 'Spottit Game',
-            preview: <text>Loading...</text>,
+            preview: (
+              <vstack height="100%" width="100%" alignment="middle center">
+                <image
+                  imageHeight={100}
+                  imageWidth={100}
+                  height="100px"
+                  width="100px"
+                  url="loading.gif"
+                  description="Loading"
+                  resizeMode="fit"
+                />
+              </vstack>
+            ),
             postData: {
               postType: 'game',
               puzzleImage: puzzleImage,
@@ -249,7 +261,19 @@ Devvit.addMenuItem({
       const post = await context.reddit.submitPost({
         subredditName,
         title: 'Spottit Home',
-        preview: <text>Loading...</text>,
+        preview: (
+          <vstack height="100%" width="100%" alignment="middle center">
+            <image
+              imageHeight={100}
+              imageWidth={100}
+              height="100px"
+              width="100px"
+              url="loading.gif"
+              description="Loading"
+              resizeMode="fit"
+            />
+          </vstack>
+        ),
         postData: {
           postType: 'home',
         },
