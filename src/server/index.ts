@@ -1,7 +1,6 @@
 import express from 'express';
 import { InitResponse, IncrementResponse, DecrementResponse } from '../shared/types/api';
 import { redis, reddit, createServer, context, getServerPort } from '@devvit/web/server';
-import { createPost } from './core/post';
 
 const app = express();
 
@@ -93,33 +92,15 @@ router.post<{ postId: string }, DecrementResponse | { status: string; message: s
 
 router.post('/internal/on-app-install', async (_req, res): Promise<void> => {
   try {
-    const post = await createPost();
-
     res.json({
       status: 'success',
-      message: `Post created in subreddit ${context.subredditName} with id ${post.id}`,
+      message: `App installed in subreddit ${context.subredditName}`,
     });
   } catch (error) {
-    console.error(`Error creating post: ${error}`);
+    console.error(`Error on app install: ${error}`);
     res.status(400).json({
       status: 'error',
-      message: 'Failed to create post',
-    });
-  }
-});
-
-router.post('/internal/menu/post-create', async (_req, res): Promise<void> => {
-  try {
-    const post = await createPost();
-
-    res.json({
-      navigateTo: `https://reddit.com/r/${context.subredditName}/comments/${post.id}`,
-    });
-  } catch (error) {
-    console.error(`Error creating post: ${error}`);
-    res.status(400).json({
-      status: 'error',
-      message: 'Failed to create post',
+      message: 'Failed to process app install',
     });
   }
 });
