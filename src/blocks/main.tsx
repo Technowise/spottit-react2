@@ -7,10 +7,51 @@ Devvit.configure({
   redditAPI: true,
 });
 
-// Custom post type for Spottit Home
+// Single custom post type that handles both Home and Game views
 Devvit.addCustomPostType({
-  name: 'SpottitHome',
+  name: 'SpottitPost',
   render: (context) => {
+    const postType = context.postData?.postType as string;
+    
+    // Render SpottitGame view
+    if (postType === 'game') {
+      const puzzleImage = context.postData?.puzzleImage as string;
+      const puzzleTitle = context.postData?.puzzleTitle as string;
+
+      const handleStart = () => {
+        context.ui.showToast('Starting game...');
+        // Add game start logic here
+      };
+
+      return (
+        <zstack height="100%" width="100%" alignment="center middle">
+          <image
+            imageHeight={1024}
+            imageWidth={1024}
+            height="100%"
+            width="100%"
+            url={puzzleImage || ''}
+            resizeMode="cover"
+          />
+          <vstack
+            height="100%"
+            width="100%"
+            alignment="center middle"
+            backgroundColor="rgba(28, 29, 28, 0.60)"
+            gap="medium"
+          >
+            <text size="xxlarge" weight="bold" color="white">
+              {puzzleTitle || 'Spottit Game'}
+            </text>
+            <button appearance="primary" size="large" onPress={handleStart}>
+              Start
+            </button>
+          </vstack>
+        </zstack>
+      );
+    }
+    
+    // Render SpottitHome view (default)
     // Fetch available post flairs for the subreddit
     const { data: flairTemplates, loading } = useAsync(async () => {
       try {
@@ -72,29 +113,9 @@ Devvit.addCustomPostType({
           const postOptions: any = {
             subredditName,
             title: title || 'Spottit Game',
-            preview: (
-              <zstack height="100%" width="100%" alignment="center middle">
-                <image
-                  imageHeight={1024}
-                  imageWidth={1024}
-                  height="100%"
-                  width="100%"
-                  url={puzzleImage}
-                  resizeMode="cover"
-                />
-                <vstack
-                  height="100%"
-                  width="100%"
-                  alignment="center middle"
-                  backgroundColor="rgba(28, 29, 28, 0.60)"
-                >
-                  <text size="large" weight="bold" color="white">
-                    Loading...
-                  </text>
-                </vstack>
-              </zstack>
-            ),
+            preview: <text>Loading...</text>,
             postData: {
+              postType: 'game',
               puzzleImage: puzzleImage,
               puzzleTitle: title,
               gameState: 'initial',
@@ -133,47 +154,6 @@ Devvit.addCustomPostType({
   },
 });
 
-// Custom post type for Spottit Game - shows puzzle image with Start button
-Devvit.addCustomPostType({
-  name: 'SpottitGame',
-  render: (context) => {
-    const puzzleImage = context.postData?.puzzleImage as string;
-    const puzzleTitle = context.postData?.puzzleTitle as string;
-
-    const handleStart = () => {
-      context.ui.showToast('Starting game...');
-      // Add game start logic here
-    };
-
-    return (
-      <zstack height="100%" width="100%" alignment="center middle">
-        <image
-          imageHeight={1024}
-          imageWidth={1024}
-          height="100%"
-          width="100%"
-          url={puzzleImage || ''}
-          resizeMode="cover"
-        />
-        <vstack
-          height="100%"
-          width="100%"
-          alignment="center middle"
-          backgroundColor="rgba(28, 29, 28, 0.60)"
-          gap="medium"
-        >
-          <text size="xxlarge" weight="bold" color="white">
-            {puzzleTitle || 'Spottit Game'}
-          </text>
-          <button appearance="primary" size="large" onPress={handleStart}>
-            Start
-          </button>
-        </vstack>
-      </zstack>
-    );
-  },
-});
-
 // Menu item to create Spottit Home
 Devvit.addMenuItem({
   label: 'Create Spottit Home',
@@ -188,15 +168,14 @@ Devvit.addMenuItem({
     }
 
     try {
-      // Create a blocks post with SpottitHome custom post type
+      // Create a blocks post with SpottitPost custom post type
       const post = await context.reddit.submitPost({
         subredditName,
         title: 'Spottit Home',
-        preview: (
-          <vstack height="100%" width="100%" alignment="middle center">
-            <text size="large">Loading...</text>
-          </vstack>
-        ),
+        preview: <text>Loading...</text>,
+        postData: {
+          postType: 'home',
+        },
       });
 
       context.ui.showToast('Spottit Home created!');
