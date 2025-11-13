@@ -1,7 +1,7 @@
 /** @jsx Devvit.createElement */
 /** @jsxFrag Devvit.Fragment */
 
-import { Devvit, useForm } from '@devvit/public-api';
+import { Devvit, useForm, useAsync } from '@devvit/public-api';
 
 Devvit.configure({
   redditAPI: true,
@@ -11,6 +11,22 @@ Devvit.configure({
 Devvit.addCustomPostType({
   name: 'SpottitHome',
   render: (context) => {
+    // Fetch available post flairs for the subreddit
+    const { data: flairTemplates, loading } = useAsync(async () => {
+      try {
+        const subreddit = await context.reddit.getCurrentSubreddit();
+        const flairs = await subreddit.getPostFlairTemplates();
+        return flairs.map((flair) => ({
+          label: flair.text || flair.id,
+          value: flair.id,
+        }));
+      } catch (error) {
+        return [];
+      }
+    });
+
+    const hasFlairs = flairTemplates && flairTemplates.length > 0;
+
     // Create form for creating a Spottit post
     const createPostForm = useForm(
       {
@@ -20,16 +36,39 @@ Devvit.addCustomPostType({
             name: 'title',
             label: 'Post title',
             required: true,
+            helpText: 'Enter the title for your Spottit puzzle',
+          },
+          {
+            type: 'image',
+            name: 'puzzleImage',
+            label: 'Puzzle Image',
+            required: true,
+            helpText: 'Upload a JPG, PNG, or WEBP image',
+          },
+          {
+            type: 'select',
+            name: 'flair',
+            label: 'Post flair',
+            options: flairTemplates || [{ label: 'No flairs available', value: '' }],
+            helpText: hasFlairs ? 'Select a flair for your post' : 'No flairs available in this subreddit',
+            required: hasFlairs ? true : false,
           },
         ],
         title: 'Create Spottit Post',
         acceptLabel: 'Create',
         cancelLabel: 'Cancel',
       },
-      async (values: { title: string }) => {
-        const { title } = values;
-        context.ui.showToast(`Post "${title}" will be created`);
+      async (values: { title: string; puzzleImage: string; flair?: string[] }) => {
+        const { title, puzzleImage, flair } = values;
+        
+        // Show success message with the data
+        const flairText = flair && flair.length > 0 ? ' with flair' : '';
+        const imageText = puzzleImage ? ' and image' : '';
+        context.ui.showToast(`Creating "${title}"${flairText}${imageText}...`);
+        
         // Form submitted - you can add logic here to create the post
+        // puzzleImage will contain the uploaded image URL (i.redd.it URL)
+        // flair will contain the selected flair ID array (if any)
       }
     );
 
@@ -38,9 +77,13 @@ Devvit.addCustomPostType({
         <text size="xlarge" weight="bold">
           Spottit Home
         </text>
-        <button appearance="primary" onPress={() => context.ui.showForm(createPostForm)}>
-          Create a Spottit Post
-        </button>
+        {loading ? (
+          <text>Loading flairs...</text>
+        ) : (
+          <button appearance="primary" onPress={() => context.ui.showForm(createPostForm)}>
+            Create a Spottit Post
+          </button>
+        )}
       </vstack>
     );
   },
