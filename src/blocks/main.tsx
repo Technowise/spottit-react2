@@ -17,7 +17,84 @@ Devvit.addCustomPostType({
     if (postType === 'game') {
       const puzzleImage = context.postData?.puzzleImage as string;
       const puzzleTitle = context.postData?.puzzleTitle as string;
+      const gameState = (context.postData?.gameState as string) || 'SpotsMarkingPending';
+      
+      // Get current user and post author info
+      const { data: userInfo } = useAsync(async () => {
+        try {
+          const [currentUser, post, subreddit] = await Promise.all([
+            context.reddit.getCurrentUsername(),
+            context.reddit.getPostById(context.postId!),
+            context.reddit.getCurrentSubreddit(),
+          ]);
+          
+          const author = await post.getAuthor();
+          const moderators = await subreddit.getModerators();
+          const modList = await moderators.all();
+          const isModerator = modList.some((mod: any) => mod.username === currentUser);
+          const isAuthor = author?.username === currentUser;
+          
+          return {
+            currentUser: currentUser || '',
+            postAuthor: author?.username || '',
+            isAuthor: isAuthor || false,
+            isModerator: isModerator || false,
+          };
+        } catch (error) {
+          return {
+            currentUser: '',
+            postAuthor: '',
+            isAuthor: false,
+            isModerator: false,
+          };
+        }
+      });
 
+      const handleStartMarking = () => {
+        context.ui.showToast('Opening spot marking interface...');
+        // TODO: Implement spot marking logic
+      };
+
+      // Render based on game state
+      if (gameState === 'SpotsMarkingPending') {
+        // Show different UI based on user role
+        const canMarkSpots = (userInfo as any)?.isAuthor || (userInfo as any)?.isModerator;
+        
+        return (
+          <zstack height="100%" width="100%" alignment="center middle">
+            <image
+              imageHeight={1024}
+              imageWidth={1024}
+              height="100%"
+              width="100%"
+              url={puzzleImage || ''}
+              resizeMode="cover"
+            />
+            <vstack
+              height="100%"
+              width="100%"
+              alignment="center middle"
+              backgroundColor="rgba(28, 29, 28, 0.60)"
+              gap="medium"
+            >
+              <text size="xxlarge" weight="bold" color="white">
+                {puzzleTitle || 'Spottit Game'}
+              </text>
+              {canMarkSpots ? (
+                <button appearance="primary" size="large" onPress={handleStartMarking}>
+                  Start marking spots
+                </button>
+              ) : (
+                <text size="large" color="white">
+                  Spots marking pending by OP
+                </text>
+              )}
+            </vstack>
+          </zstack>
+        );
+      }
+
+      // ReadyToPlay and Archived states (existing Start button logic)
       const handleStart = () => {
         context.ui.showToast('Starting game...');
         // Add game start logic here
@@ -118,7 +195,7 @@ Devvit.addCustomPostType({
               postType: 'game',
               puzzleImage: puzzleImage,
               puzzleTitle: title,
-              gameState: 'initial',
+              gameState: 'SpotsMarkingPending',
             },
           };
 
