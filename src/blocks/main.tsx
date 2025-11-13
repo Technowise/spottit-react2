@@ -60,15 +60,59 @@ Devvit.addCustomPostType({
       },
       async (values: { title: string; puzzleImage: string; flair?: string[] }) => {
         const { title, puzzleImage, flair } = values;
-        
-        // Show success message with the data
-        const flairText = flair && flair.length > 0 ? ' with flair' : '';
-        const imageText = puzzleImage ? ' and image' : '';
-        context.ui.showToast(`Creating "${title}"${flairText}${imageText}...`);
-        
-        // Form submitted - you can add logic here to create the post
-        // puzzleImage will contain the uploaded image URL (i.redd.it URL)
-        // flair will contain the selected flair ID array (if any)
+        const subredditName = context.subredditName;
+
+        if (!subredditName) {
+          context.ui.showToast('Error: Subreddit name not found');
+          return;
+        }
+
+        try {
+          // Create a SpottitGame post with the puzzle image
+          const postOptions: any = {
+            subredditName,
+            title: title || 'Spottit Game',
+            preview: (
+              <zstack height="100%" width="100%" alignment="center middle">
+                <image
+                  imageHeight={1024}
+                  imageWidth={1024}
+                  height="100%"
+                  width="100%"
+                  url={puzzleImage}
+                  resizeMode="cover"
+                />
+                <vstack
+                  height="100%"
+                  width="100%"
+                  alignment="center middle"
+                  backgroundColor="rgba(28, 29, 28, 0.60)"
+                >
+                  <text size="large" weight="bold" color="white">
+                    Loading...
+                  </text>
+                </vstack>
+              </zstack>
+            ),
+            postData: {
+              puzzleImage: puzzleImage,
+              puzzleTitle: title,
+              gameState: 'initial',
+            },
+          };
+
+          // Add flair if selected
+          if (flair && flair.length > 0 && flair[0]) {
+            postOptions.flairId = flair[0];
+          }
+
+          const post = await context.reddit.submitPost(postOptions);
+
+          context.ui.showToast(`Spottit game "${title}" created!`);
+          context.ui.navigateTo(post);
+        } catch (error) {
+          context.ui.showToast('Failed to create Spottit game');
+        }
       }
     );
 
@@ -85,6 +129,47 @@ Devvit.addCustomPostType({
           </button>
         )}
       </vstack>
+    );
+  },
+});
+
+// Custom post type for Spottit Game - shows puzzle image with Start button
+Devvit.addCustomPostType({
+  name: 'SpottitGame',
+  render: (context) => {
+    const puzzleImage = context.postData?.puzzleImage as string;
+    const puzzleTitle = context.postData?.puzzleTitle as string;
+
+    const handleStart = () => {
+      context.ui.showToast('Starting game...');
+      // Add game start logic here
+    };
+
+    return (
+      <zstack height="100%" width="100%" alignment="center middle">
+        <image
+          imageHeight={1024}
+          imageWidth={1024}
+          height="100%"
+          width="100%"
+          url={puzzleImage || ''}
+          resizeMode="cover"
+        />
+        <vstack
+          height="100%"
+          width="100%"
+          alignment="center middle"
+          backgroundColor="rgba(28, 29, 28, 0.60)"
+          gap="medium"
+        >
+          <text size="xxlarge" weight="bold" color="white">
+            {puzzleTitle || 'Spottit Game'}
+          </text>
+          <button appearance="primary" size="large" onPress={handleStart}>
+            Start
+          </button>
+        </vstack>
+      </zstack>
     );
   },
 });
