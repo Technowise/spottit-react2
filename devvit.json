@@ -5,13 +5,17 @@
     "dir": "dist/client",
     "entrypoints": {
       "default": {
-        "entry": "index.html"
+        "entry": "index.html",
+        "inline": true,
+        "height": "tall"
+      },
+      "spotMarking": {
+        "entry": "index.html",
+        "height": "tall"
       }
     }
   },
-  "blocks": {
-    "entry": "src/blocks/main.tsx"
-  },
+
   "server": {
     "dir": "dist/server",
     "entry": "index.cjs"
@@ -20,6 +24,20 @@
     "dir": "assets"
   },
 
+  "forms": {
+    "createGamePost": "/internal/form/create-game-post"
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Create a Spottit Post",
+        "description": "Create a new Spottit puzzle game",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/create-game"
+      }
+    ]
+  },
   "triggers": {
     "onAppInstall": "/internal/on-app-install"
   },

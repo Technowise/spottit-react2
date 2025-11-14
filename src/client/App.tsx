@@ -1,61 +1,78 @@
-import { navigateTo } from '@devvit/web/client';
-import { useCounter } from './hooks/useCounter';
+import { SpotMarking } from './SpotMarking';
+import { SpottitGame } from './SpottitGame';
+import { useState, useEffect } from 'react';
+import { requestExpandedMode } from '@devvit/web/client';
 
 export const App = () => {
-  const { count, username, loading, increment, decrement } = useCounter();
-  return (
-    <div className="flex relative flex-col justify-center items-center min-h-screen gap-4">
-      <img className="object-contain w-1/2 max-w-[250px] mx-auto" src="/snoo.png" alt="Snoo" />
-      <div className="flex flex-col items-center gap-2">
-        <h1 className="text-2xl font-bold text-center text-gray-900 ">
-          {username ? `Hey ${username} 👋` : ''}
-        </h1>
-        <p className="text-base text-center text-gray-600 ">
-          Edit <span className="bg-[#e5ebee]  px-1 py-0.5 rounded">src/client/App.tsx</span> to get
-          started.
-        </p>
+  const [loading, setLoading] = useState(true);
+  const [gameData, setGameData] = useState<{
+    puzzleImage: string;
+    puzzleTitle: string;
+    gameState: string;
+    isAuthor: boolean;
+  } | null>(null);
+  const [isMarkingSpots, setIsMarkingSpots] = useState(false);
+
+  useEffect(() => {
+    // Check localStorage to see if we should show spot marking mode
+    const spotMarkingMode = localStorage.getItem('spotMarkingMode');
+    if (spotMarkingMode === 'true') {
+      setIsMarkingSpots(true);
+    }
+
+    // Load game data
+    const loadGameData = async () => {
+      try {
+        const gameResponse = await fetch('/api/game-data');
+        if (gameResponse.ok) {
+          const data = await gameResponse.json();
+          setGameData(data);
+        }
+      } catch (error) {
+        // Failed to load game data
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGameData();
+  }, []);
+
+  const handleStartMarking = async (event: React.MouseEvent) => {
+    try {
+      // Set localStorage flag before requesting expanded mode
+      localStorage.setItem('spotMarkingMode', 'true');
+      // Request expanded mode with spot marking entry point
+      await requestExpandedMode(event, 'spotMarking');
+    } catch (error) {
+      // Fallback to inline mode if expanded mode fails
+      setIsMarkingSpots(true);
+    }
+  };
+
+  const handleCloseMarking = () => {
+    // Clear localStorage flag and reload to return to inline view
+    localStorage.removeItem('spotMarkingMode');
+    window.location.reload();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <img src="/loading.gif" alt="Loading" className="w-24 h-24" />
       </div>
-      <div className="flex items-center justify-center mt-5">
-        <button
-          className="flex items-center justify-center bg-[#d93900] text-white w-14 h-14 text-[2.5em] rounded-full cursor-pointer font-mono leading-none transition-colors"
-          onClick={decrement}
-          disabled={loading}
-        >
-          -
-        </button>
-        <span className="text-[1.8em] font-medium mx-5 min-w-[50px] text-center leading-none text-gray-900">
-          {loading ? '...' : count}
-        </span>
-        <button
-          className="flex items-center justify-center bg-[#d93900] text-white w-14 h-14 text-[2.5em] rounded-full cursor-pointer font-mono leading-none transition-colors"
-          onClick={increment}
-          disabled={loading}
-        >
-          +
-        </button>
-      </div>
-      <footer className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 text-[0.8em] text-gray-600">
-        <button
-          className="cursor-pointer"
-          onClick={() => navigateTo('https://developers.reddit.com/docs')}
-        >
-          Docs
-        </button>
-        <span className="text-gray-300">|</span>
-        <button
-          className="cursor-pointer"
-          onClick={() => navigateTo('https://www.reddit.com/r/Devvit')}
-        >
-          r/Devvit
-        </button>
-        <span className="text-gray-300">|</span>
-        <button
-          className="cursor-pointer"
-          onClick={() => navigateTo('https://discord.com/invite/R7yu2wh9Qz')}
-        >
-          Discord
-        </button>
-      </footer>
-    </div>
-  );
+    );
+  }
+
+  // Show spot marking if in expanded mode
+  if (isMarkingSpots && gameData) {
+    return (
+      <SpotMarking
+        puzzleImage={gameData.puzzleImage}
+        onClose={handleCloseMarking}
+      />
+    );
+  }
+
+  return <SpottitGame onStartMarking={handleStartMarking} />;
 };
