@@ -1,0 +1,64 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Animated dot pattern -->
+    <pattern id="dots" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="rgba(255,255,255,0.1)" />
+    </pattern>
+    
+    <!-- Magnifying glass icon -->
+    <symbol id="magnifier" viewBox="0 0 100 100">
+      <circle cx="35" cy="35" r="25" stroke="white" stroke-width="6" fill="none"/>
+      <line x1="54" y1="54" x2="80" y2="80" stroke="white" stroke-width="6" stroke-linecap="round"/>
+    </symbol>
+    
+    <!-- Sparkle effect -->
+    <symbol id="sparkle" viewBox="0 0 20 20">
+      <path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="white" opacity="0.6"/>
+    </symbol>
+  </defs>
+  
+  <!-- Background with gradient -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  
+  <!-- Dot pattern overlay -->
+  <rect width="1200" height="630" fill="url(#dots)"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="150" fill="rgba(255,255,255,0.05)"/>
+  <circle cx="1100" cy="530" r="200" fill="rgba(255,255,255,0.05)"/>
+  <circle cx="900" cy="100" r="100" fill="rgba(255,255,255,0.08)"/>
+  
+  <!-- Central magnifying glass icon -->
+  <g transform="translate(550, 265)">
+    <circle cx="50" cy="50" r="60" fill="rgba(255,255,255,0.15)"/>
+    <use href="#magnifier" width="100" height="100"/>
+  </g>
+  
+  <!-- Sparkles around the magnifier -->
+  <use href="#sparkle" x="480" y="220" width="20" height="20"/>
+  <use href="#sparkle" x="680" y="240" width="15" height="15"/>
+  <use href="#sparkle" x="520" y="380" width="18" height="18"/>
+  <use href="#sparkle" x="650" y="370" width="16" height="16"/>
+  
+  <!-- Decorative difference markers (circles with X) -->
+  <g opacity="0.3">
+    <circle cx="200" cy="300" r="30" stroke="white" stroke-width="3" fill="none"/>
+    <line x1="185" y1="285" x2="215" y2="315" stroke="white" stroke-width="3"/>
+    <line x1="215" y1="285" x2="185" y2="315" stroke="white" stroke-width="3"/>
+  </g>
+  
+  <g opacity="0.3">
+    <circle cx="1000" cy="350" r="25" stroke="white" stroke-width="3" fill="none"/>
+    <line x1="988" y1="338" x2="1012" y2="362" stroke="white" stroke-width="3"/>
+    <line x1="1012" y1="338" x2="988" y2="362" stroke="white" stroke-width="3"/>
+  </g>
+  
+  <!-- Bottom wave decoration -->
+  <path d="M0 550 Q300 520 600 550 T1200 550 L1200 630 L0 630 Z" fill="rgba(255,255,255,0.1)"/>
+</svg>

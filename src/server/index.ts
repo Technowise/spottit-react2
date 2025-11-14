@@ -105,10 +105,18 @@ router.post('/internal/form/create-game-post', async (req, res): Promise<void> =
     // Get the current user who is creating the post
     const currentUser = await reddit.getCurrentUsername();
 
-    // Create a webview post for the game
+    // Create a webview post for the game with native splash screen
     const post = await reddit.submitCustomPost({
       subredditName,
       title: title || 'Spottit Game',
+      splash: {
+        appDisplayName: 'Spottit',
+        heading: title || 'Find the Hidden Differences',
+        description: 'Test your observation skills in this classic spot-the-difference puzzle game. Can you find all the hidden differences?',
+        buttonLabel: '🔍 Play Now',
+        appIconUri: 'spottit-icon.svg',
+        backgroundUri: 'default-splash.svg',
+      },
     });
 
     // Store game data in Redis with creator info
